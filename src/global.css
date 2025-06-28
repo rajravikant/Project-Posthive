@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+:root{
+    --background : #F5F5F5;
+    --background-dark : #121212;
+    --primary : #F50057; 
+    --secondary : #F0F0F0;
+    --accent : #f5a6c2;
+    --dark: #121212;
+    --light : #F5F5F5;
+    --border:rgba(238, 238, 238, 0.693);
+    --border-dark:rgba(255, 255, 255, 0.1);
+    --card: #FFFFFF;
+    --card-dark: #1E1E1E;
+    --card-foreground-dark: #FFFFFF;
+    --heading : #1E1E1E;
+    --body : #1E1E1E;
+    --body-dark : #cdcdcd;
+
+
+}

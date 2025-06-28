@@ -1,0 +1,114 @@
+diff --git a/node_modules/react-native-pell-rich-editor/index.d.ts b/node_modules/react-native-pell-rich-editor/index.d.ts
+index 870f2ba..3478592 100644
+--- a/node_modules/react-native-pell-rich-editor/index.d.ts
++++ b/node_modules/react-native-pell-rich-editor/index.d.ts
+@@ -1,6 +1,6 @@
+-import {WebViewProps} from 'react-native-webview';
+-import {ImageSourcePropType, StyleProp, ViewStyle} from 'react-native';
+ import React from 'react';
++import { ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
++import { WebViewProps } from 'react-native-webview';
+ 
+ /** The RichTextEditor accepts all props from Webview */
+ export interface RichEditorProps extends WebViewProps {
+@@ -147,6 +147,8 @@ export interface RichEditorProps extends WebViewProps {
+     contentCSSText?: string; // editor content css text
+     initialCSSText?: string; // editor global css initial text
+     cssText?: string; // editor global css text
++    codeBackground?: string; // background color for code blocks
++    codeTextColor?: string; // text color for code blocks
+   };
+ 
+   /**
+diff --git a/node_modules/react-native-pell-rich-editor/src/RichEditor.js b/node_modules/react-native-pell-rich-editor/src/RichEditor.js
+index 14bea22..7eafa38 100644
+--- a/node_modules/react-native-pell-rich-editor/src/RichEditor.js
++++ b/node_modules/react-native-pell-rich-editor/src/RichEditor.js
+@@ -1,8 +1,8 @@
+-import React, {Component} from 'react';
+-import {WebView} from 'react-native-webview';
+-import {actions, messages} from './const';
+-import {Keyboard, Platform, StyleSheet, TextInput, View, Linking} from 'react-native';
+-import {createHTML} from './editor';
++import { Component } from 'react';
++import { Keyboard, Linking, Platform, StyleSheet, TextInput, View } from 'react-native';
++import { WebView } from 'react-native-webview';
++import { actions, messages } from './const';
++import { createHTML } from './editor';
+ 
+ const PlatformIOS = Platform.OS === 'ios';
+ 
+@@ -40,9 +40,10 @@ export default class RichTextEditor extends Component {
+     that.layout = {};
+     that.selectionChangeListeners = [];
+     const {
+-      editorStyle: {backgroundColor, color, placeholderColor, initialCSSText, cssText, contentCSSText, caretColor} = {},
++      editorStyle: {backgroundColor, color, placeholderColor, initialCSSText, cssText, contentCSSText, caretColor , codeBackground, codeTextColor} = {},
+       html,
+       pasteAsPlainText,
++     
+       onPaste,
+       onKeyUp,
+       onKeyDown,
+@@ -67,6 +68,8 @@ export default class RichTextEditor extends Component {
+             color,
+             caretColor,
+             placeholderColor,
++            codeBackground,
++            codeTextColor,
+             initialCSSText,
+             cssText,
+             contentCSSText,
+@@ -267,7 +270,7 @@ export default class RichTextEditor extends Component {
+           ref={that.setRef}
+           onMessage={that.onMessage}
+           originWhitelist={['*']}
+-          dataDetectorTypes={'none'}
++          dataDetectorTypes={['none']}
+           domStorageEnabled={false}
+           bounces={false}
+           javaScriptEnabled={true}
+diff --git a/node_modules/react-native-pell-rich-editor/src/editor.js b/node_modules/react-native-pell-rich-editor/src/editor.js
+index 92079ad..8dfbf9c 100644
+--- a/node_modules/react-native-pell-rich-editor/src/editor.js
++++ b/node_modules/react-native-pell-rich-editor/src/editor.js
+@@ -10,10 +10,9 @@ function getContentCSS() {
+         .x-todo li {list-style:none;}
+         .x-todo-box {position: relative; left: -24px;}
+         .x-todo-box input{position: absolute;}
+-        blockquote{border-left: 6px solid #ddd;padding: 5px 0 5px 10px;margin: 15px 0 15px 15px;}
++        blockquote{border-left: 6px solid #333;padding: 5px 0 5px 10px;margin: 15px 0 15px 15px;}
+         hr{display: block;height: 0; border: 0;border-top: 1px solid #ccc; margin: 15px 0; padding: 0;}
+-        pre{padding: 10px 5px 10px 10px;margin: 15px 0;display: block;line-height: 18px;background: #F0F0F0;border-radius: 6px;font-size: 13px; font-family: 'monaco', 'Consolas', "Liberation Mono", Courier, monospace; word-break: break-all; word-wrap: break-word;overflow-x: auto;}
+-        pre code {display: block;font-size: inherit;white-space: pre-wrap;color: inherit;}
++        
+     </style>
+     `;
+ }
+@@ -24,6 +23,8 @@ function createHTML(options = {}) {
+     color = '#000033',
+     caretColor = '',
+     placeholderColor = '#a9a9a9',
++    codeBackground = '#f5f5f5',
++    codeTextColor = '#000',
+     contentCSSText = '',
+     cssText = '',
+     initialCSSText = '',
+@@ -63,6 +64,10 @@ function createHTML(options = {}) {
+         [placeholder]:empty:before { content: attr(placeholder); color: ${placeholderColor};}
+         [placeholder]:empty:focus:before { content: attr(placeholder);color: ${placeholderColor};display:block;}
+     </style>
++    <style>
++    pre{padding: 10px 5px 10px 10px;margin: 15px 0;display: block;line-height: 18px;background: ${codeBackground};border-radius: 6px;font-size: 13px; font-family: 'monaco', 'Consolas', "Liberation Mono", Courier, monospace; word-break: break-all; word-wrap: break-word;overflow-x: auto;}
++    pre code {display: block;font-size: inherit;white-space: pre-wrap;color: ${codeTextColor};}
++    </style>
+     ${getContentCSS()}
+     <style>${cssText}</style>
+ </head>
+@@ -737,4 +742,5 @@ function createHTML(options = {}) {
+ }
+ 
+ const HTML = createHTML();
+-export {HTML, createHTML, getContentCSS};
++export { createHTML, getContentCSS, HTML };
++
