@@ -5,7 +5,6 @@ import CustomText from "@/components/ui/CustomText";
 import InputField from "@/components/ui/InputField";
 import { Fonts } from "@/constants/theme";
 import useAuthStore from "@/store/authStore";
-import { Creator } from "@/types/post";
 import { AntDesign, Ionicons, Zocial } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
@@ -38,7 +37,8 @@ interface LoginMutationResponse {
   message: string;
   accessToken: string;
   refreshToken: string;
-  existingUser: Creator;
+  user: { userId: string; username: string; avatar: string };
+  // existingUser: Creator;
 }
 
 const LoginPage = () => {
@@ -52,20 +52,19 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     if (identifier.trim() === "" || password === "") return;
-
     setIsLoading(true);
     try {
       const response = await loginUser(identifier.trim(), password);
       setIsLoading(false);
 
       if (response.status === 200) {
-        const { accessToken, existingUser, refreshToken } =
+        const { accessToken, user, refreshToken } =
           response.data as LoginMutationResponse;
         login({
-          currentUser: existingUser,
+          currentUser : user,
           accessToken: accessToken,
           refreshToken: refreshToken,
-        });
+        })
       }
     } catch (error) {
       setError("Invalid username or password");
@@ -89,10 +88,9 @@ const LoginPage = () => {
         );
 
         if (rsp.status === 200) {
-          const { accessToken, existingUser, refreshToken } =
-            rsp.data as LoginMutationResponse;
+          const { accessToken, user, refreshToken } = rsp.data as LoginMutationResponse;
           login({
-            currentUser: existingUser,
+            currentUser: user,
             accessToken: accessToken,
             refreshToken: refreshToken,
           });
@@ -139,7 +137,9 @@ const LoginPage = () => {
           </View>
 
           <View className="w-full px-5 justify-end mb-6">
-            <Animated.View entering={FadeInUp.delay(200).duration(1000).springify()}>
+            <Animated.View
+              entering={FadeInUp.delay(200).duration(1000).springify()}
+            >
               <CustomText
                 variant="h2"
                 fontFamily={Fonts.SemiBold}
@@ -148,16 +148,18 @@ const LoginPage = () => {
                 Welcome Back
               </CustomText>
 
-                <CustomText
-              variant="body"
-              className="dark:text-gray-300  text-gray-600 mb-10"
-            >
-              Login to your account to continue
-            </CustomText>
+              <CustomText
+                variant="body"
+                className="dark:text-gray-300  text-gray-600 mb-10"
+              >
+                Login to your account to continue
+              </CustomText>
             </Animated.View>
-          
+
             <View className="gap-5 w-full">
-              <Animated.View entering={FadeInDown.delay(400).duration(1000).springify()}>
+              <Animated.View
+                entering={FadeInDown.delay(400).duration(1000).springify()}
+              >
                 <InputField
                   placeholder="email or username"
                   value={identifier}
@@ -173,7 +175,10 @@ const LoginPage = () => {
                 />
               </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(600).duration(1000).springify()} className="relative w-full">
+              <Animated.View
+                entering={FadeInDown.delay(600).duration(1000).springify()}
+                className="relative w-full"
+              >
                 <InputField
                   placeholder="Password"
                   value={password}
@@ -206,25 +211,30 @@ const LoginPage = () => {
                 </View>
               )}
 
-              <Animated.View entering={FadeInDown.delay(800).duration(1000).springify()}>
-                <Button
-                onPress={handleLogin}
-                loading={isLoading}
-                disabled={isLoading}
-                className="w-full h-14 rounded-xl mt-4"
-                variant="primary"
+              <Animated.View
+                entering={FadeInDown.delay(800).duration(1000).springify()}
               >
-                <CustomText
-                  fontFamily={Fonts.SemiBold}
-                  className="text-white text-base"
+                <Button
+                  onPress={handleLogin}
+                  loading={isLoading}
+                  disabled={isLoading}
+                  className="w-full h-14 rounded-xl mt-4"
+                  variant="primary"
                 >
-                  {isLoading ? "Logging in..." : "Login"}
-                </CustomText>
-              </Button>
+                  <CustomText
+                    fontFamily={Fonts.SemiBold}
+                    className="text-white text-base"
+                  >
+                    {isLoading ? "Logging in..." : "Login"}
+                  </CustomText>
+                </Button>
               </Animated.View>
             </View>
 
-            <Animated.View entering={FadeInDown.delay(900).duration(1000).springify()} className="mt-8 items-center">
+            <Animated.View
+              entering={FadeInDown.delay(900).duration(1000).springify()}
+              className="mt-8 items-center"
+            >
               <CustomText className="dark:text-gray-300 text-gray-600 mb-6">
                 Or continue with
               </CustomText>

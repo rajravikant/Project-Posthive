@@ -47,7 +47,7 @@ const ListItem = ({ item,id,onDelete }: ListItemProps) => {
 
 
   return (
-    <Reanimated.View style={styleAnimation}>
+    <Reanimated.View className="dark:bg-neutral-900 bg-white shadow rounded-md " style={[styleAnimation]}>
       <TouchableOpacity style={{width:50,height:50}} onPress={()=>onDelete(item)} className=" justify-center items-center">
         <Icon name="trash" family="Ionicons" size={20} color="red" />
       </TouchableOpacity>
@@ -57,13 +57,13 @@ const ListItem = ({ item,id,onDelete }: ListItemProps) => {
 
   return (
     <ReanimatedSwipeable 
-    containerStyle={{ backgroundColor: 'transparent',height:50 }}
+    containerStyle={{height:50,borderRadius:10,marginVertical:5 }}
     friction={2}
     enableTrackpadTwoFingerGesture={true}
     rightThreshold={40}
     renderRightActions={RightAction}
     >
-    <TouchableOpacity onPress={()=>router.push(`/blog/${item}`)} className="p-4 border-b border-gray-600">
+    <TouchableOpacity onPress={()=>router.push(`/blog/${item}`)} className="p-4 bg-gray-200 dark:bg-neutral-800 shadow-sm ">
       <View className="flex-row items-center justify-between">
       <CustomText variant="body">{item}</CustomText>
       <Icon name="chevron-forward" family="Ionicons" size={20} color="#666" />
@@ -97,6 +97,7 @@ const ListItem = ({ item,id,onDelete }: ListItemProps) => {
 
         <FlashList
           ref={list}
+          contentContainerClassName='py-4'
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (<ListItem item={item.item} id={item.id} onDelete={deleteHandler} />)}
           estimatedItemSize={100}

@@ -1,4 +1,5 @@
 import { PostType } from "@/types/post";
+import { cn } from "@/utils/style.utils";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useColorScheme } from "nativewind";
 import { Image, TouchableOpacity, View } from "react-native";
@@ -7,6 +8,7 @@ import CustomText from "../ui/CustomText";
 interface BlogCardProps {
   isAuthor?: boolean;
   onPress?: () => void;
+  className?: string;
 }
 
 
@@ -29,6 +31,7 @@ export const BlogCardVertical = ({
   createdAt,
   updatedAt,
   onPress,
+  className,
   isAuthor = false,
 }: PostType & BlogCardProps) => {
   const timeToRead = Math.ceil(content.split(" ").length / 200); // Assuming average reading speed of 200 words per minute
@@ -36,7 +39,9 @@ export const BlogCardVertical = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="rounded-xl p-4 mb-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800"
+      className={cn("rounded-xl mb-4 p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800",
+        className,
+      )}
     >
       <View className="flex-row items-center gap-4 ">
         <Image

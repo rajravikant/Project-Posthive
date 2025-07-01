@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
 interface FilterProps {
   filter : string
   setFilter: (key: string) => void;
@@ -64,15 +63,17 @@ export const FilterTab = ({
 }) => {
   return (
     <TouchableOpacity
-      className={cn("items-start mr-4 ",
+      className={cn("items-start",
+        "px-6 py-1.5 rounded-full",
+        filter === item ? "bg-rose-400/20 " : "bg-transparent",
         tabClassName
       )}
 
       onPress={() => onFilter(item)}
     >
       <Text
-      className={cn("text-lg text-left font-OutFit_Regular",
-        filter === item ? "text-primary font-OutFit_SemiBold" : "text-gray-500"
+      className={cn("text-lg text-center font-OutFit_Regular",
+        filter === item ? "text-primary font-OutFit_SemiBold" : "text-gray-500 "
       )}
       >
         {item}

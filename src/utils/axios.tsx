@@ -1,7 +1,7 @@
 import { getNewAccessToken } from '@/api/auth';
 import { getAccessToken, getRefreshToken, setAccessTokenInStore } from '@/store/authStore';
 import axios from 'axios';
-const isDevelopment = false;
+const isDevelopment = true;
 
 const BASE_URL = isDevelopment
   ? process.env.EXPO_PUBLIC_LOCAL_API_URL
@@ -20,7 +20,7 @@ const axiosPrivate = axios.create({
 
 axiosPrivate.interceptors.request.use(
     async (config)=>{
-        const accessToken = getAccessToken() ; 
+        const accessToken = getAccessToken(); 
         if (accessToken) {
             config.headers.Authorization = `Bearer ${accessToken}`;
         }

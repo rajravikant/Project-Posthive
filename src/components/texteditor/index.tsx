@@ -97,6 +97,7 @@ export default function TextEditor({
           ref={richText}
           onChange={handleChange}
           pasteAsPlainText={true}
+          scrollEnabled={true}
           style={{
             flex: 1,
             borderColor: colorScheme === "dark" ? "#444" : "#ccc",

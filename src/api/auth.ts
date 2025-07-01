@@ -1,5 +1,4 @@
-import { Creator } from "@/types/post";
-import { UpdateUserResponse } from "@/types/user";
+import { UpdateUserResponse, UserProfileResponse } from "@/types/user";
 import { axiosPrivate } from "@/utils/axios";
 
 export const loginUser = async (identifier : string, password: string) => {
@@ -49,7 +48,7 @@ export const forgotPassword = async (identifier: string) => {
 
 
 
-export const getUserProfile = async (username: string):Promise<Creator> => {
+export const getUserProfile = async (username: string):Promise<UserProfileResponse> => {
     const response = await axiosPrivate.get(`users/${username}`);
     return response.data;
 }
@@ -69,4 +68,17 @@ export const deleteAccount = async () => {
     return response
 }
 
+export const updatePostViewed = async (postId: string) => {
+    const response = await axiosPrivate.patch(`users/update-viewed`, { postId });
+    return response;
+}
+
+export const followAuthor = async (userId: string) => {
+    const response = await axiosPrivate.post("users/follow", { followUserId : userId });
+    return response.data;
+}
+export const unfollowAuthor = async (userId: string) => {
+    const response = await axiosPrivate.post("users/unfollow", { unfollowUserId : userId });
+    return response.data;
+}
 

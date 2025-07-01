@@ -1,4 +1,4 @@
-import { CommentType, PostType } from "@/types/post";
+import { CommentType, LikeType, PostType } from "@/types/post";
 import { axiosPrivate, axiosPublic } from "@/utils/axios";
 import { AxiosResponse } from "axios";
 
@@ -14,8 +14,8 @@ export const getPosts = async ():Promise<GetPostResponse> => {
 }
 
 export const getPost = async (slug:string):Promise<PostType> => {
-    const response = await axiosPublic.get(`posts?slug=${slug}`)
-    return response.data.posts[0]
+    const response = await axiosPublic.get(`posts/${slug}`)
+    return response.data
 }
 
 export const getRecentPosts = async ():Promise<PostType[]> => {
@@ -88,4 +88,26 @@ export const editComment = async (commentId: string, text: string):Promise<Comme
     const response = await axiosPrivate.patch(`comment/${commentId}`, { text });
     return response.data;
 }
+
+export interface LikePostResponse {
+    message: string;
+    like : LikeType
+}
+
+export const likePost = async (postId: string): Promise<LikePostResponse> => {
+    const response = await axiosPrivate.post(`like/${postId}`);
+    return response.data;
+}
+
+export const unlikePost = async (postId: string) => {
+    const response = await axiosPrivate.delete(`like/${postId}`);
+    return response;
+}
+
+export const getRecommendedPosts = async (): Promise<PostType[]> => {
+    const response = await axiosPrivate.get(`posts/recommendations`);
+    return response.data;
+}
+
+
 

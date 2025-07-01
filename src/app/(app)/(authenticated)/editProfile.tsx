@@ -8,7 +8,7 @@ import { Feather } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as ImagePicker from 'expo-image-picker';
 import { ImagePickerAsset } from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
 
@@ -16,6 +16,7 @@ import { Alert, TouchableOpacity, View } from "react-native";
 interface EditProfileData {
   username?: string;
   email?: string;
+  bio?: string;
   password: string | null;
   profilePicture: ImagePickerAsset | null;
 }
@@ -23,15 +24,17 @@ interface EditProfileData {
 
 
 export default function EditProfile() {
-    const {currentUser,updateUserInfo} = useAuthStore()
+    const {updateUserInfo,currentUser} = useAuthStore()
+    const params = useLocalSearchParams();
     const router = useRouter()
     const client = useQueryClient()
-  const [data, setData] = useState<EditProfileData>({
-    username : currentUser?.username || "",
-    email: currentUser?.email || "",
-    profilePicture: null,
-    password: null,
-  });
+    const [data, setData] = useState<EditProfileData>({
+      username : params.username as string,
+      email: params.email as string,
+      bio: params.bio as string,
+      profilePicture: null,
+      password: null,
+    });
 
   const editMutation = useMutation({
     mutationFn : (data:FormData)=>updateUserProfile(data)
@@ -68,6 +71,7 @@ export default function EditProfile() {
       if (data.username) formData.append("username", data.username);
       if (data.email) formData.append("email", data.email);
       if (data.password) formData.append("password", data.password);
+      if (data.bio) formData.append("bio", data.bio);
       if (data.profilePicture) {
         formData.append("avatar",  {
           uri: data.profilePicture.uri,
@@ -79,9 +83,15 @@ export default function EditProfile() {
 
       editMutation.mutate(formData,{
         onSuccess: ({updatedUser}) => {
+          updateUserInfo({
+            currentUser : {
+              avatar : updatedUser.avatar,
+              username : updatedUser.username,
+              userId : updatedUser._id,
+            }
+          });
           // @ts-ignore
           client.invalidateQueries("userProfile",updatedUser.username);
-          updateUserInfo(updatedUser);
           
           router.back();
         },
@@ -101,7 +111,7 @@ export default function EditProfile() {
       <View className="flex-1 p-4">
          <View className="mb-16 items-center">
           <View className="border-4 border-white dark:border-gray-900 rounded-full">
-            <Avatar uri={data.profilePicture?.uri! || currentUser?.avatar!} className="size-32" />
+            <Avatar uri={data.profilePicture?.uri! || params.avatar as string} className="size-32" />
              <TouchableOpacity onPress={pickImage}
               className="absolute right-0 bottom-0 bg-primary p-2 rounded-full" 
             >
@@ -132,6 +142,18 @@ export default function EditProfile() {
                 value={data.email || ""}
                 onChangeText={(value) =>
                 onChangeHandler({ target: { name: "email", value } })
+                }
+            />
+            </View>
+            <View>
+            <CustomText className="text-gray-800 dark:text-gray-200 mb-2">
+                Bio
+            </CustomText>
+            <InputField
+                placeholder="Write a short bio about yourself"
+                value={data.bio || ""}
+                onChangeText={(value) =>
+                onChangeHandler({ target: { name: "bio", value } })
                 }
             />
             </View>

@@ -1,24 +1,18 @@
-export type Creator = {
-  _id: string;
-  username: string;
-  posts: PostType[];
-  avatar: string;
-  email: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Creator } from "./user";
 
 
 export interface PostType {
-  _id: string;
+ _id: string;
   title: string;
   slug: string;
   summary: string;
   content: string;
   imageUrl: string;
-  tags: string[];
   category: string;
+  tags: string[];
   comments: CommentType[];
+  likes: LikeType[];
+  views: number;
   creator : Creator
   updatedAt: string;
   createdAt: string;
@@ -33,5 +27,14 @@ export type CommentType = {
   updatedAt: string;
   post : string
 }
+
+export type LikeType = {
+  _id: string;
+  creator: string;
+  post: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 

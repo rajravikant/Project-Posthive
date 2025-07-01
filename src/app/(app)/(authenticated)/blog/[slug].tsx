@@ -1,8 +1,11 @@
+import { updatePostViewed } from "@/api/auth";
 import { getPost } from "@/api/blog";
 import {
   useAddComment,
   useDeleteCommentMutation,
   useEditComment,
+  useLikePostMutation,
+  useUnlikePostMutation,
 } from "@/api/use-posts";
 import { BlogSkeleton } from "@/components/blog/BlogSkeleton";
 import RichBlogContent from "@/components/blog/RichBlogContent";
@@ -13,9 +16,10 @@ import Button from "@/components/ui/Button";
 import CustomText from "@/components/ui/CustomText";
 import Icon from "@/components/ui/Icon";
 import Separator from "@/components/ui/Separator";
-import { Fonts } from "@/constants/theme";
+import { Colors, Fonts } from "@/constants/theme";
 import useAuthStore from "@/store/authStore";
 import { CommentType } from "@/types/post";
+import { Feather } from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
@@ -29,7 +33,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import { useColorScheme } from "nativewind";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Dimensions, Keyboard, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Keyboard,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
   interpolate,
   useAnimatedScrollHandler,
@@ -41,8 +51,7 @@ const HEADER_HEIGHT = 350;
 
 export default function Blog() {
   const { slug } = useLocalSearchParams();
-  const { addToBookmark, userBookmarks, removeFromBookmark, currentUser } =
-    useAuthStore();
+  const { addToBookmark, userBookmarks, removeFromBookmark, currentUser } = useAuthStore();
   const [commentText, setCommentText] = useState("");
   const queryClient = useQueryClient();
   const [comments, setComments] = useState<CommentType[]>([]);
@@ -58,6 +67,14 @@ export default function Blog() {
     queryKey: ["blog", slug],
     queryFn: () => getPost(slug as string),
   });
+  // const [isLiked, setIsLiked] = useState<boolean>(() => {
+  //   if (!blog) return false;
+  //   return (
+  //     blog.likes.filter((like: LikeType) => like.creator === currentUser?.userId)
+  //       .length > 0 || false
+  //   );
+  // });
+  const isLiked = blog?.likes.some(like => like.creator === currentUser?.userId)
   useEffect(() => {
     if (blog && blog.comments) {
       setComments(
@@ -66,12 +83,19 @@ export default function Blog() {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         )
       );
+
+      if (currentUser && scrollY.value > 100) {
+        updateUserViewed();
+      }
     }
   }, [blog]);
 
   const add = useAddComment();
   const edit = useEditComment();
   const deleteComment = useDeleteCommentMutation();
+  const likePost = useLikePostMutation();
+  const unlikePost = useUnlikePostMutation();
+
   const { colorScheme } = useColorScheme();
   const { width: windowWidth } = Dimensions.get("window");
 
@@ -92,7 +116,7 @@ export default function Blog() {
       scrollY.value,
       [-HEADER_HEIGHT, 0, HEADER_HEIGHT / 2, HEADER_HEIGHT],
       [HEADER_HEIGHT / 4, 0, -HEADER_HEIGHT / 3, -HEADER_HEIGHT / 2],
-      'clamp'
+      "clamp"
     );
 
     return {
@@ -103,6 +127,37 @@ export default function Blog() {
       ],
     };
   });
+
+  const toggleLike = () => {
+    if (!blog) return;
+
+    if (!currentUser) {
+      Alert.alert("You must be logged in to like a post");
+      return;
+    }
+
+    if (isLiked) {
+      unlikePost.mutate(blog._id, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["blog",blog.slug] });
+        },
+        onError: (error) => {
+          console.log(error);
+        },
+      });
+    } else {
+      likePost.mutate(blog._id, {
+        onSuccess: ({ like }) => {
+          queryClient.invalidateQueries({ queryKey: ["userProfile",blog.slug] });
+        },
+        onError: (error) => {
+          console.log(error);
+        },
+      });
+    }
+
+    
+  };
 
   const onCommentSubmit = async () => {
     if (editingComment) {
@@ -118,7 +173,7 @@ export default function Blog() {
                   : comment
               )
             );
-            Keyboard.dismiss()
+            Keyboard.dismiss();
             setCommentText("");
             setEditingComment(null);
             queryClient.invalidateQueries({ queryKey: ["blog", slug] });
@@ -165,28 +220,28 @@ export default function Blog() {
     });
   };
 
-  const onEditComment = async (id: string, text: string) => {
-    edit.mutate(
-      { comment: text, commentId: id },
-      {
-        onSuccess: (data) => {
-          setComments((prev) =>
-            prev.map((comment) =>
-              comment._id === id ? { ...comment, text: data.text } : comment
-            )
-          );
-          queryClient.invalidateQueries({ queryKey: ["blog", slug] });
-        },
-        onError: (error) => {
-          Alert.alert(
-            "Error",
-            `Failed to update comment. Please try again later.`
-          );
-          console.error("Error updating comment:", error);
-        },
-      }
-    );
-  };
+  // const onEditComment = async (id: string, text: string) => {
+  //   edit.mutate(
+  //     { comment: text, commentId: id },
+  //     {
+  //       onSuccess: (data) => {
+  //         setComments((prev) =>
+  //           prev.map((comment) =>
+  //             comment._id === id ? { ...comment, text: data.text } : comment
+  //           )
+  //         );
+  //         queryClient.invalidateQueries({ queryKey: ["blog", slug] });
+  //       },
+  //       onError: (error) => {
+  //         Alert.alert(
+  //           "Error",
+  //           `Failed to update comment. Please try again later.`
+  //         );
+  //         console.error("Error updating comment:", error);
+  //       },
+  //     }
+  //   );
+  // };
 
   const toggleBookmark = () => {
     if (!blog) return;
@@ -219,6 +274,19 @@ export default function Blog() {
     setEditingComment({ id, text });
     setCommentText(text);
     filterSheetRef.current?.expand();
+  };
+
+  const updateUserViewed = async () => {
+    if (!blog) return;
+    console.log("Updating post viewed count for blog:");
+    
+    const response = await updatePostViewed(blog._id);
+    if (response.status !== 204) {
+      console.log("Error updating post viewed count");
+    }
+    return queryClient.invalidateQueries({
+      queryKey: ["blog", "recommendations"],
+    });
   };
 
   const renderBackdrop = useCallback(
@@ -266,7 +334,7 @@ export default function Blog() {
               position: "relative",
               height: HEADER_HEIGHT,
               width: windowWidth,
-              overflow: "hidden"
+              overflow: "hidden",
             },
           ]}
         >
@@ -279,7 +347,7 @@ export default function Blog() {
             style={{
               height: HEADER_HEIGHT + 40, // Slightly taller to avoid edges showing during animation
               width: windowWidth,
-              position: 'absolute',
+              position: "absolute",
               top: 0,
               left: 0,
               right: 0,
@@ -288,32 +356,42 @@ export default function Blog() {
             resizeMode="cover"
           />
           <LinearGradient
-            colors={["transparent", colorScheme === 'dark' ? "rgba(0, 0, 0, 0.98)" :"#fff"]}
+            colors={[
+              "transparent",
+              colorScheme === "dark" ? "rgba(0, 0, 0, 0.98)" : "#fff",
+            ]}
             className="absolute inset-0"
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
           >
             <View className="absolute bottom-10 px-6 gap-3">
+              <View className="flex-row gap-2 items-center">
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: "/userProfile",
+                      params: { username: blog?.creator.username },
+                    })
+                  }
+                  className="flex-row items-center"
+                >
+                  <Avatar uri={blog?.creator.avatar!} className="size-8" />
+                  <CustomText variant="body" className="text-gray-800 ms-2">
+                    {blog?.creator.username}
+                  </CustomText>
+                </TouchableOpacity>
+                <CustomText>
+                  •{" "}
+                  {blog?.category.charAt(0).toUpperCase() +
+                    blog?.category.slice(1)!}
+                </CustomText>
+              </View>
               <CustomText variant="h2" className="text-black">
                 {blog?.title}
               </CustomText>
               <CustomText variant="body" className="text-gray-800 mt-2">
                 {formatDate(blog?.createdAt!, "MMMM dd, yyyy")}
               </CustomText>
-              <TouchableOpacity
-                onPress={() =>
-                  router.push({
-                    pathname: "/userProfile",
-                    params: { username: blog?.creator.username },
-                  })
-                }
-                className="flex-row items-center mt-2"
-              >
-                <Avatar uri={blog?.creator.avatar!} className="size-8" />
-                <CustomText variant="body" className="text-gray-800 ms-2">
-                  {blog?.creator.username}
-                </CustomText>
-              </TouchableOpacity>
               {blog?.tags && blog.tags.length > 0 && (
                 <View className="flex-row flex-wrap">
                   {blog.tags.map((tag) => (
@@ -328,12 +406,26 @@ export default function Blog() {
         <View className="flex-grow rounded-t-2xl w-full bg-white  dark:bg-black">
           <View className="p-4">
             <View className="mt-2 gap-2">
-              <CustomText
-                variant="h1"
-                className="text-gray-900 dark:text-white"
-              >
-                Summary
-              </CustomText>
+              <View className="flex-row justify-between">
+                <CustomText
+                  variant="h1"
+                  className="text-gray-900 dark:text-white"
+                >
+                  Summary
+                </CustomText>
+                <View className="flex-row items-center gap-2">
+                  <View className="flex-row items-center gap-1">
+                    {currentUser && (
+                      <TouchableOpacity onPress={toggleLike}>
+                        <Feather name="thumbs-up" size={15} color={isLiked ? Colors.primary : "#555"} />
+                      </TouchableOpacity>
+                    )}
+                    <CustomText>{blog?.likes.length || 0}</CustomText>
+                  </View>
+
+                  <CustomText>{blog?.views || 0} Views</CustomText>
+                </View>
+              </View>
               <CustomText
                 variant="h4"
                 fontFamily={Fonts.Light}
@@ -395,7 +487,7 @@ export default function Blog() {
                           renderItem={({ item }) => (
                             <CommentItem
                               comment={item}
-                              isCreator={item.creator._id === currentUser._id}
+                              isCreator={item.creator._id === currentUser.userId}
                               onDelete={handleDeleteComment}
                               onEdit={handleEditComment}
                             />

@@ -1,15 +1,21 @@
-import { Creator } from "@/types/post";
 import { User } from "@/types/user";
 import { deleteItemAsync, getItem, setItem } from "expo-secure-store";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+
+// interface LoginData {
+//   currentUser: { userId: string; username: string,avatar : string } | null;
+//   accessToken: string | null;
+//   refreshToken: string | null;
+// }
 
 interface AuthState {
   isAuthenticated: boolean;
   isGuest: boolean;
   userBookmarks: Array<string>;
   isOnboardingCompleted?: boolean;
-  currentUser: Creator | null;
+  currentUser: { userId: string; username: string, avatar: string  } | null;
   accessToken: string | null;
   refreshToken: string | null;
   login: (user: User) => void;
@@ -18,7 +24,7 @@ interface AuthState {
   addToBookmark: (slug: string) => void;
   removeFromBookmark: (slug: string) => void;
   onboardingCompleted: (status: boolean) => void;
-  updateUserInfo: (user: Creator) => void;
+  updateUserInfo: (user: Pick<User,"currentUser">) => void;
 }
 
 
@@ -74,9 +80,12 @@ const useAuthStore = create(
             (bookmark) => bookmark !== slug
           ),
         })),
-      updateUserInfo : (user: Creator) =>
-        set((state) => ({
-          currentUser: user,
+      updateUserInfo : (user: Pick<User,"currentUser">) => set((state) => ({
+        currentUser : {
+          userId : user.currentUser?.userId || state.currentUser?.userId || "",
+          avatar : user.currentUser?.avatar || state.currentUser?.avatar || "",
+          username : user.currentUser?.username || state.currentUser?.username || ""
+        }
         })),
     }),
     {

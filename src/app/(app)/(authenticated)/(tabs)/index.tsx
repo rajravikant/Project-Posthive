@@ -1,13 +1,14 @@
 import { usePostsQuery } from "@/api/use-posts";
 import { BlogCardVertical } from "@/components/blog/BlogCardVertical";
 import { SingleBlogSkeleton } from "@/components/blog/BlogSkeleton";
-import RecentBlogs from "@/components/blog/RecentBlogs";
+import RecommendedBlogs from "@/components/blog/RecommendedBlogs";
 import Filters from "@/components/Filters";
 import HomeHeader from "@/components/navigation/HomeHeader";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import CustomText from "@/components/ui/CustomText";
 import { categories } from "@/constants/data";
 import { Fonts } from "@/constants/theme";
+import useAuthStore from "@/store/authStore";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -16,19 +17,26 @@ export default function Home() {
   const router = useRouter();
   const [filter, setFilter] = useState<string>("");
   const {data, isLoading, isError, isFetching, refetch} = usePostsQuery(filter)
- 
+  const {isGuest} = useAuthStore()
 
   isError && console.error("Error fetching blogs:", isError);
 
   const blogs = data?.posts || [];
+
+
+  const refreshPosts = ()=>{
+    if(!isLoading) {
+      refetch();
+    }
+  }
+
   return (
-    <>
       <ScreenWrapper>
         <HomeHeader />
-        <ScrollView refreshControl={<RefreshControl refreshing={isFetching} onRefresh={()=> !isLoading && refetch()} />} className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refreshPosts} />} className="flex-1" showsVerticalScrollIndicator={false}>
           <View className="mt-5">
             <CustomText variant="h5" className="text-gray-500 ">
-              Your Daily{" "}
+              Your Daily
             </CustomText>
             <CustomText variant="h1" fontFamily={Fonts.SemiBold}>
               Recommendation
@@ -36,8 +44,11 @@ export default function Home() {
           </View>
 
           {/* <Separator/> */}
-
-          <RecentBlogs/>
+          {isGuest ? <View>
+            <CustomText variant="body" className="text-gray-500 mt-4">
+              Please login to see your personalized recommendations.
+            </CustomText>
+          </View> : <RecommendedBlogs />}
 
           <View className="my-10">
             <Filters
@@ -83,6 +94,5 @@ export default function Home() {
           </View>
         </ScrollView>
       </ScreenWrapper>
-    </>
   );
 }

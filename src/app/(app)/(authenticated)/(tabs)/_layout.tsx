@@ -4,14 +4,20 @@ import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 export default function TabLayout() {
-  const {isGuest} = useAuthStore()
+  const {isGuest,userBookmarks} = useAuthStore()
   return (
     <Tabs
       initialRouteName="index"
       screenOptions={{
         headerShown: false,
         animation:"fade",
-        tabBarActiveTintColor : Colors.primary
+        tabBarActiveTintColor : Colors.primary,
+        tabBarBadgeStyle:{
+          backgroundColor: Colors.primary,
+          color: "white",
+          fontFamily:"Outfit-Regular",
+          fontSize: 10,
+        }
       }}
     >
       <Tabs.Screen
@@ -22,6 +28,7 @@ export default function TabLayout() {
          
         }}
       />
+   
       <Tabs.Screen
         name="addpost"
         options={{
@@ -33,7 +40,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="bookmarks"
         options={{
-          title: "Bookmarks",
+          title: "Saved",
+          tabBarBadge: userBookmarks.length > 0 ? userBookmarks.length : undefined,
           tabBarIcon : (props) => <Feather name="bookmark" size={24} color={props.color} />
          
         }}
@@ -43,7 +51,7 @@ export default function TabLayout() {
         name="userblogs"
         options={{
           title: "My Blogs",
-          href :  isGuest ? null : '/userblogs',
+          href : isGuest ? null : '/userblogs',
           tabBarIcon : (props) => <Feather name="book" size={24} color={props.color} />
         }}
       />

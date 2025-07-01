@@ -226,7 +226,7 @@ export default function Search() {
                       variant="body"
                       className={
                         selectedCategory === category
-                          ? "text-white"
+                          ? "text-primary"
                           : "text-gray-700 dark:text-gray-300"
                       }
                     >
@@ -236,6 +236,7 @@ export default function Search() {
                 ))}
               </View>
             </View>
+
 
             {/* Sorting Section */}
             <View>
@@ -286,17 +287,7 @@ export default function Search() {
           </View>
 
 
-          <TouchableOpacity
-            className="bg-blue-500 rounded-lg p-4 mt-6"
-            onPress={() => filterSheetRef.current?.close()}
-          >
-            <CustomText
-              variant="body"
-              className="text-white text-center font-bold"
-            >
-              Apply Filters
-            </CustomText>
-          </TouchableOpacity>
+       
 
         </BottomSheetView>
       </BottomSheet>

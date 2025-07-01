@@ -21,7 +21,6 @@ import Reanimated, {
 } from "react-native-reanimated";
 
 export default function UserBlogs() {
-  // const {currentUser} = useLocalSearchParams()
   const { currentUser } = useAuthStore();
   const client = useQueryClient();
 
@@ -168,15 +167,15 @@ const ListItem = ({ item, isAuthor, onDelete, onEdit }: ListItemProps) => {
     });
 
     return (
-      <Reanimated.View style={styleAnimation}>
-        <View>
+      <Reanimated.View  style={[styleAnimation]}>
+        <View className="bg-gray-200 dark:bg-neutral-700 border items-center justify-center border-gray-200 dark:border-neutral-800 rounded-r-xl h-full " >
           <TouchableOpacity
             style={{ width: 50, height: 50 }}
           activeOpacity={0.7}
             onPress={() => onDelete(item._id)}
             className=" justify-center items-center"
           >
-            <Icon name="trash" family="Ionicons" size={20} color={colorScheme === "dark" ? "#5f5f5f" : "black"} />
+            <Icon name="trash" family="Ionicons" size={20} color={colorScheme === "dark" ? "#ccc" : "black"} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -184,7 +183,7 @@ const ListItem = ({ item, isAuthor, onDelete, onEdit }: ListItemProps) => {
             onPress={() => onEdit(item._id)}
             className=" justify-center items-center"
           >
-            <Icon name="pencil" family="Ionicons" size={20} color={colorScheme === "dark" ? "#5f5f5f" : "black"} />
+            <Icon name="pencil" family="Ionicons" size={20} color={colorScheme === "dark" ? "#ccc" : "black"} />
           </TouchableOpacity>
         </View>
       </Reanimated.View>
@@ -196,14 +195,14 @@ const ListItem = ({ item, isAuthor, onDelete, onEdit }: ListItemProps) => {
       enableTrackpadTwoFingerGesture={true}
       rightThreshold={40}
       renderRightActions={RightAction}
+      containerStyle={{marginBottom:10}}
     >
-      <View style={{ marginTop: 10 }}>
         <BlogCardVertical
           {...item}
           isAuthor={isAuthor}
           onPress={() => router.push(`/blog/${item.slug}`)}
+          className="mb-0"
         />
-      </View>
     </ReanimatedSwipeable>
   );
 };
