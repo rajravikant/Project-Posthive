@@ -30,7 +30,6 @@ export default function UserPublicProfile() {
     const followMutation = useFollowAuthorMutation(username as string,currentUser?.username!)
     const unfollowMutation = useUnfollowAuthorMutation(username as string, currentUser?.username!);
 
-    // Fetch user profile
     const {
         data: user,
         isLoading: isLoadingUser,
@@ -43,10 +42,7 @@ export default function UserPublicProfile() {
         queryFn: () => getUserProfile(username as string),
     });
 
-    // Check if current user is following this profile
-    const isFollowing = user?.followers?.some(
-        follower => follower.username === currentUser?.username
-    );
+    const isFollowing = user?.followers?.some(follower => follower.username === currentUser?.username );
 
     
 
@@ -78,7 +74,6 @@ export default function UserPublicProfile() {
         refetchUser();
     };
 
-    // Format the join date
     const joinedDate = user?.createdAt ? formatDistance(new Date(user.createdAt), new Date(), { addSuffix: true }) : '';
 
     if (isLoadingUser) {
@@ -116,7 +111,6 @@ export default function UserPublicProfile() {
         );
     }
     
-    // Render content based on active tab
     const renderTabContent = () => {
         switch (activeTab) {
             case "posts":

@@ -16,7 +16,6 @@ Project-Posthive is a feature-rich blogging application that enables users to cr
 - **Profile Management**: Custom user profiles with avatars
 - **Content Discovery**: Browse, search, and filter posts by categories/tags
 - **Bookmarks**: Save favorite content for later reading
-- **Responsive Design**: Works on various screen sizes
 - **Theme Support**: Light and dark mode
 
 ### Technical Features
@@ -24,7 +23,7 @@ Project-Posthive is a feature-rich blogging application that enables users to cr
 - TypeScript for type safety
 - React Navigation for routing
 - NativeWind (Tailwind CSS) for styling
-- React Query for efficient data fetching
+- React Query for efficient data fetching and cache
 - React Native Pell Rich Editor for the editor
 - Cross-platform support (iOS and Android)
 
@@ -86,6 +85,9 @@ Key dependencies include:
 - @tanstack/react-query
 - react-native-pell-rich-editor
 - expo-router
+- zustand
+- @react-native-google-signin/google-signin
+- @gorhom/bottom-sheet
 
 For a complete list, see the `package.json` file.
 

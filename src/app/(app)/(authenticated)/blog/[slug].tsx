@@ -8,6 +8,7 @@ import {
   useUnlikePostMutation,
 } from "@/api/use-posts";
 import { BlogSkeleton } from "@/components/blog/BlogSkeleton";
+import CommentItem from "@/components/blog/CommentItem";
 import RichBlogContent from "@/components/blog/RichBlogContent";
 import ScreenHeader from "@/components/navigation/ScreenHeader";
 import Avatar from "@/components/ui/Avatar";
@@ -28,9 +29,10 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { formatDate, formatDistance } from "date-fns";
+import { formatDate } from "date-fns";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -52,8 +54,12 @@ const HEADER_HEIGHT = 350;
 export default function Blog() {
   const { slug } = useLocalSearchParams();
   const { addToBookmark, userBookmarks, removeFromBookmark, currentUser } = useAuthStore();
-  const [commentText, setCommentText] = useState("");
   const queryClient = useQueryClient();
+  const { colorScheme } = useColorScheme();
+  const { width: windowWidth } = Dimensions.get("window");
+  const filterSheetRef = useRef<BottomSheet | null>(null);
+  const scrollY = useSharedValue(0);
+  const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<CommentType[]>([]);
   const [editingComment, setEditingComment] = useState<{
     id: string;
@@ -67,14 +73,15 @@ export default function Blog() {
     queryKey: ["blog", slug],
     queryFn: () => getPost(slug as string),
   });
-  // const [isLiked, setIsLiked] = useState<boolean>(() => {
-  //   if (!blog) return false;
-  //   return (
-  //     blog.likes.filter((like: LikeType) => like.creator === currentUser?.userId)
-  //       .length > 0 || false
-  //   );
-  // });
-  const isLiked = blog?.likes.some(like => like.creator === currentUser?.userId)
+  const add = useAddComment();
+  const edit = useEditComment();
+  const deleteComment = useDeleteCommentMutation();
+  const likePost = useLikePostMutation();
+  const unlikePost = useUnlikePostMutation();
+  
+  const [isLiked,setIsLiked] = useState(()=>{
+    return blog?.likes.some(like => like.creator === currentUser?.userId)
+  })
   useEffect(() => {
     if (blog && blog.comments) {
       setComments(
@@ -90,28 +97,16 @@ export default function Blog() {
     }
   }, [blog]);
 
-  const add = useAddComment();
-  const edit = useEditComment();
-  const deleteComment = useDeleteCommentMutation();
-  const likePost = useLikePostMutation();
-  const unlikePost = useUnlikePostMutation();
 
-  const { colorScheme } = useColorScheme();
-  const { width: windowWidth } = Dimensions.get("window");
-
-  const filterSheetRef = useRef<BottomSheet | null>(null);
-  const scrollY = useSharedValue(0);
+ 
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
-      // Use this approach for smoother updates
       scrollY.value = event.contentOffset.y;
     },
   });
 
   const animatedImageStyle = useAnimatedStyle(() => {
-    // Create a more linear and smooth translation
-    // Use a simple dampening factor for better physics feel
     const translateY = interpolate(
       scrollY.value,
       [-HEADER_HEIGHT, 0, HEADER_HEIGHT / 2, HEADER_HEIGHT],
@@ -137,21 +132,25 @@ export default function Blog() {
     }
 
     if (isLiked) {
+      setIsLiked(false);  // Optimistically update UI
       unlikePost.mutate(blog._id, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["blog",blog.slug] });
         },
         onError: (error) => {
+          setIsLiked(true); // Revert like state on error
           console.log(error);
         },
       });
     } else {
+      setIsLiked(true);  // Optimistically update UI
       likePost.mutate(blog._id, {
         onSuccess: ({ like }) => {
           queryClient.invalidateQueries({ queryKey: ["userProfile",blog.slug] });
         },
         onError: (error) => {
           console.log(error);
+          setIsLiked(false);
         },
       });
     }
@@ -220,29 +219,6 @@ export default function Blog() {
     });
   };
 
-  // const onEditComment = async (id: string, text: string) => {
-  //   edit.mutate(
-  //     { comment: text, commentId: id },
-  //     {
-  //       onSuccess: (data) => {
-  //         setComments((prev) =>
-  //           prev.map((comment) =>
-  //             comment._id === id ? { ...comment, text: data.text } : comment
-  //           )
-  //         );
-  //         queryClient.invalidateQueries({ queryKey: ["blog", slug] });
-  //       },
-  //       onError: (error) => {
-  //         Alert.alert(
-  //           "Error",
-  //           `Failed to update comment. Please try again later.`
-  //         );
-  //         console.error("Error updating comment:", error);
-  //       },
-  //     }
-  //   );
-  // };
-
   const toggleBookmark = () => {
     if (!blog) return;
     if (userBookmarks.includes(blog.slug!)) {
@@ -278,7 +254,6 @@ export default function Blog() {
 
   const updateUserViewed = async () => {
     if (!blog) return;
-    console.log("Updating post viewed count for blog:");
     
     const response = await updatePostViewed(blog._id);
     if (response.status !== 204) {
@@ -319,13 +294,14 @@ export default function Blog() {
   }
   return (
     <>
+    <StatusBar hidden />
       <Animated.ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
-        scrollEventThrottle={16} // Better for 60fps animation
+        scrollEventThrottle={16} 
         onScroll={scrollHandler}
         showsVerticalScrollIndicator={false}
-        decelerationRate="normal" // Smoother deceleration
+        decelerationRate="normal" 
       >
         <Animated.View
           style={[
@@ -345,7 +321,7 @@ export default function Blog() {
           <Animated.Image
             source={{ uri: blog?.imageUrl }}
             style={{
-              height: HEADER_HEIGHT + 40, // Slightly taller to avoid edges showing during animation
+              height: HEADER_HEIGHT + 40, 
               width: windowWidth,
               position: "absolute",
               top: 0,
@@ -608,78 +584,3 @@ export default function Blog() {
   );
 }
 
-interface CommentItemProps {
-  comment: CommentType;
-  onDelete: (id: string) => void;
-  onEdit: (id: string, text: string) => void;
-  isCreator: boolean;
-}
-
-const CommentItem = ({
-  comment,
-  isCreator,
-  onDelete,
-  onEdit,
-}: CommentItemProps) => {
-  return (
-    <View className="p-4 bg-white dark:bg-neutral-800 rounded-lg mb-4 border border-gray-100 dark:border-neutral-700 shadow-sm">
-      <View className="flex-row justify-between items-center">
-        <View className="flex-row items-center">
-          {/* Profile image placeholder - can be replaced with actual avatar component */}
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/userProfile",
-                params: { username: comment.creator.username },
-              })
-            }
-            className="w-8 h-8 rounded-full bg-blue-500 mr-2 items-center justify-center"
-          >
-            <Avatar uri={comment.creator.avatar} className="size-8" />
-          </TouchableOpacity>
-          <CustomText variant="h5" className="text-gray-900 dark:text-white">
-            {comment.creator.username}
-          </CustomText>
-        </View>
-
-        {isCreator && (
-          <View className="flex-row">
-            <TouchableOpacity
-              onPress={() => onEdit(comment._id, comment.text)}
-              className="p-2 mr-2"
-            >
-              <Icon name="pencil" family="Ionicons" size={16} color="#3b82f6" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => onDelete(comment._id)}
-              className="p-2"
-            >
-              <Icon
-                name="trash-outline"
-                family="Ionicons"
-                size={16}
-                color="#ef4444"
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      <CustomText
-        variant="body"
-        className="text-gray-600 dark:text-gray-300 mt-3 mb-2"
-      >
-        {comment.text}
-      </CustomText>
-
-      <View className="flex-row items-center mt-1">
-        <Icon name="time-outline" family="Ionicons" size={14} color="#9ca3af" />
-        <CustomText variant="body" className="text-gray-400 ml-1 text-xs">
-          {formatDistance(new Date(comment.createdAt), new Date(), {
-            addSuffix: true,
-          })}
-        </CustomText>
-      </View>
-    </View>
-  );
-};

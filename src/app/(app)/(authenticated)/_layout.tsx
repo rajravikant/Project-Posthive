@@ -22,11 +22,7 @@ const Layout = () => {
       <Stack.Screen name="userProfile" options={{
         presentation:'containedModal',
       }}/>
-      <Stack.Screen name="notifications" options={{
-        presentation:'containedModal',
-        headerShown: true,
-        headerTitle: "Notifications",
-      }}/>
+      <Stack.Screen name="notifications"/>
 
       
     </Stack>

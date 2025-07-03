@@ -24,7 +24,7 @@ interface EditProfileData {
 
 
 export default function EditProfile() {
-    const {updateUserInfo,currentUser} = useAuthStore()
+    const {updateUserInfo} = useAuthStore()
     const params = useLocalSearchParams();
     const router = useRouter()
     const client = useQueryClient()
@@ -107,7 +107,6 @@ export default function EditProfile() {
     }
 
   return (
-    // <Header title="Edit Profile" buttonBack />
       <View className="flex-1 p-4">
          <View className="mb-16 items-center">
           <View className="border-4 border-white dark:border-gray-900 rounded-full">
@@ -169,6 +168,9 @@ export default function EditProfile() {
                 }
             />
             </View>
+            <View className="mt-4 items-end">
+          <CustomText className="text-gray-500 dark:text-gray-400">Last updated on {new Date(params.lastUpdated as string).toLocaleDateString()}</CustomText>
+        </View>
         </View>
         <View className="mt-20 flex flex-row gap-2 items-center">
           <Button variant="outline" className="flex-1" onPress={()=>router.dismiss()} >
@@ -178,14 +180,9 @@ export default function EditProfile() {
             Apply Changes
           </Button>
         </View>
+        
       </View>
   );
 }
 
 
-
-const EditIcon = () => (
-  <View className="absolute right-4 bottom-4 bg-primary p-2 rounded-full">
-    <Feather name="edit-2" size={18} color="#fff" />
-  </View>
-);

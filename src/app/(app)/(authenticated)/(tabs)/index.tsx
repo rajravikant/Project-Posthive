@@ -13,6 +13,10 @@ import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
+import Animated, { FadeInUp } from "react-native-reanimated";
+
+
+
 export default function Home() {
   const router = useRouter();
   const [filter, setFilter] = useState<string>("");
@@ -24,33 +28,30 @@ export default function Home() {
   const blogs = data?.posts || [];
 
 
-  const refreshPosts = ()=>{
-    if(!isLoading) {
-      refetch();
-    }
-  }
+
 
   return (
       <ScreenWrapper>
         <HomeHeader />
-        <ScrollView refreshControl={<RefreshControl refreshing={isFetching} onRefresh={refreshPosts} />} className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="mt-5">
+        <ScrollView refreshControl={<RefreshControl refreshing={isFetching} onRefresh={() => !isFetching && refetch()} />} className="flex-1" showsVerticalScrollIndicator={false}>
+          <Animated.View
+            entering={FadeInUp.duration(500).delay(100).springify()}
+            className="mt-5">
             <CustomText variant="h5" className="text-gray-500 ">
               Your Daily
             </CustomText>
             <CustomText variant="h1" fontFamily={Fonts.SemiBold}>
               Recommendation
             </CustomText>
-          </View>
+          </Animated.View>
 
-          {/* <Separator/> */}
           {isGuest ? <View>
             <CustomText variant="body" className="text-gray-500 mt-4">
               Please login to see your personalized recommendations.
             </CustomText>
           </View> : <RecommendedBlogs />}
 
-          <View className="my-10">
+          <Animated.View entering={FadeInUp.duration(500).delay(200).springify()} className="my-10">
             <Filters
               filter={filter || "All"}
               setFilter={setFilter}
@@ -91,7 +92,7 @@ export default function Home() {
                 )}
               />
             )}
-          </View>
+          </Animated.View>
         </ScrollView>
       </ScreenWrapper>
   );

@@ -3,12 +3,12 @@ import { useColorScheme } from 'nativewind';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withDelay,
-    withSequence,
-    withTiming
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSequence,
+  withTiming
 } from 'react-native-reanimated';
 import CustomText from './ui/CustomText';
 import Icon from './ui/Icon';
@@ -20,19 +20,16 @@ export default function NetInfoComponent() {
     const { colorScheme } = useColorScheme();
     const isDark = colorScheme === 'dark';
     
-    // Animation values
     const translateY = useSharedValue(100);
     const opacity = useSharedValue(0);
     
-    // Function to show/hide the network alert
     const updateVisibility = (isConnected: boolean) => {
-      // If offline, show the alert
       if (!isConnected) {
         setVisible(true);
         translateY.value = withSequence(
           withTiming(0, { duration: 400 }),
           withDelay(
-            5000, // Keep visible for 5 seconds if offline
+            5000, 
             withTiming(100, { duration: 500 }, () => {
               runOnJS(setVisible)(false);
             })
@@ -43,12 +40,11 @@ export default function NetInfoComponent() {
           withDelay(5000, withTiming(0, { duration: 300 }))
         );
       } else if (connectionInfo?.isConnected === false) {
-        // Only show "back online" notification if we were previously offline
         setVisible(true);
         translateY.value = withSequence(
           withTiming(0, { duration: 400 }),
           withDelay(
-            3000, // Show "online" message for 3 seconds
+            3000, 
             withTiming(100, { duration: 500 }, () => {
               runOnJS(setVisible)(false);
             })
@@ -62,13 +58,11 @@ export default function NetInfoComponent() {
     };
     
     useEffect(() => {
-      // Get initial network state when component mounts
       const getInitialNetworkState = async () => {
         try {
           const networkState = await getNetworkStateAsync();
           setConnectionInfo(networkState);
           
-          // Only show alert if offline on initial load
           if (!networkState.isConnected) {
             updateVisibility(false);
           }
@@ -79,11 +73,9 @@ export default function NetInfoComponent() {
       
       getInitialNetworkState();
       
-      // Subscribe to network changes
       const unsubscribe = addNetworkStateListener((state) => {
         console.log('Network state changed:', state.isConnected);
         setConnectionInfo(prevState => {
-          // Only update visibility if network state actually changed
           if (prevState?.isConnected !== state.isConnected) {
             updateVisibility(state.isConnected === true);
           }

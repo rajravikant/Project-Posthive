@@ -11,7 +11,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
-  BottomSheetView
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
@@ -237,7 +237,6 @@ export default function Search() {
               </View>
             </View>
 
-
             {/* Sorting Section */}
             <View>
               <CustomText variant="h5" className="mb-4">
@@ -285,10 +284,6 @@ export default function Search() {
               </TouchableOpacity>
             </View>
           </View>
-
-
-       
-
         </BottomSheetView>
       </BottomSheet>
     </ScreenWrapper>

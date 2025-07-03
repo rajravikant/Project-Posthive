@@ -34,7 +34,6 @@ export default function TextEditor({
   }, []);
 
   const handleCursorPosition = useCallback((scrollY: number) => {
-    // Positioning scroll bar
     scrollRef.current!.scrollTo({ y: scrollY - 30, animated: true });
   }, []);
 

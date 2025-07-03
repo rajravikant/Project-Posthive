@@ -8,7 +8,6 @@ const Layout = () => {
 
 const {isAuthenticated,isGuest} = useAuthStore()
 
-  // Protect the inside area
   if (!isAuthenticated  && inAuthGroup) {
     return <Redirect href="/welcome" />;
   }

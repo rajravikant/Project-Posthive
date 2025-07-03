@@ -4,12 +4,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 
-// interface LoginData {
-//   currentUser: { userId: string; username: string,avatar : string } | null;
-//   accessToken: string | null;
-//   refreshToken: string | null;
-// }
-
 interface AuthState {
   isAuthenticated: boolean;
   isGuest: boolean;

@@ -11,7 +11,6 @@ interface PostImagePickerProps {
 
 export default function PostImagePicker({ imageAsset, onImageSelected, deafaultImage }: PostImagePickerProps) {
 
-    // const [imagePickerResult, setImagePickerResult] = useState<ImagePicker.ImagePickerAsset | null>(null);
 
      const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -23,7 +22,6 @@ export default function PostImagePicker({ imageAsset, onImageSelected, deafaultI
     });
 
    if (!result.canceled) {
-    //  setImagePickerResult(result.assets[0]);
     onImageSelected(result.assets[0]);
    }
 

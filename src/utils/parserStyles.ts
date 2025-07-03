@@ -4,7 +4,6 @@ import { StyleProp, ViewStyle } from "react-native";
 
 const isDark = colorScheme.get() === "dark"
 
-// Define colors and fonts styles for each element type
 export const colors = {
     p : { color: isDark ? '#d5d5d5' : '#000000',},
     strong: { color: isDark ? '#ffffff' : '#000000'},

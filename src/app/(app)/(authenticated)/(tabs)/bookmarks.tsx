@@ -6,6 +6,7 @@ import { FlashList } from '@shopify/flash-list'
 import { useRouter } from 'expo-router'
 import React, { useRef } from 'react'
 import { LayoutAnimation, TouchableOpacity, View } from 'react-native'
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable'
 import Reanimated, {
   SharedValue,
   useAnimatedStyle,
@@ -17,13 +18,10 @@ interface ListItemProps {
   onDelete: (slug: string) => void;
 }
 
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable'
 
 export default function Bookmarks() {
   const {userBookmarks,removeFromBookmark} = useAuthStore()
   const list = useRef<FlashList<{id : string,item:string}> | null>(null);
-  
-
   
 
   const deleteHandler = (slug: string) => {

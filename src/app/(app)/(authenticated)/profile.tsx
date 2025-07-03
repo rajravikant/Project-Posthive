@@ -1,8 +1,9 @@
 import { deleteAccount, getUserProfile, logoutUser } from "@/api/auth";
-import { useUnfollowAuthorMutation } from "@/api/use-posts";
 import Filters from "@/components/Filters";
 import Header from "@/components/navigation/Header";
+import LikedPostItem from "@/components/profile/LikedPostItem";
 import SettingItem from "@/components/profile/SettingItem";
+import UserListItem from "@/components/profile/UserListItem";
 import ScreenWrapper from "@/components/ScreenWrapper";
 import Avatar from "@/components/ui/Avatar";
 import Badge from "@/components/ui/Badge";
@@ -10,8 +11,6 @@ import Button from "@/components/ui/Button";
 import CustomText from "@/components/ui/CustomText";
 import { Colors, Fonts } from "@/constants/theme";
 import useAuthStore from "@/store/authStore";
-import { FollowFollower, LikedPosts } from "@/types/user";
-import { cn } from "@/utils/style.utils";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { FlashList } from "@shopify/flash-list";
@@ -25,7 +24,7 @@ type ProfileTab = "posts" | "followers" | "following" | "liked posts";
 
 const Page = () => {
   const { colorScheme, toggleColorScheme } = useColorScheme();
-  const { logout, currentUser } = useAuthStore();
+  const { logout, currentUser,onboardingCompleted,isOnboardingCompleted } = useAuthStore();
   const isDark = colorScheme === "dark";
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -52,7 +51,6 @@ const Page = () => {
     }
   });
 
-  // const unfollowAuthor = (username : string,)
 
   const logoutHandler = async () => {
     try {
@@ -226,11 +224,9 @@ const Page = () => {
       <Header title="Profile" buttonBack />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}>
-        {/* Profile1 Header with Gradient Background */}
         <View className="mb-4">
          
           
-          {/* Avatar and Basic Info */}
           <View className="items-center">
             <View className="border-4 border-white dark:border-gray-800 rounded-full shadow-lg">
               <Avatar uri={userProfile?.avatar!} className="size-32" />
@@ -317,7 +313,8 @@ const Page = () => {
                 username: userProfile?.username,
                 email: userProfile?.email,
                 bio: userProfile?.bio,
-                avatar: userProfile?.avatar
+                avatar: userProfile?.avatar,
+                lastUpdated : userProfile?.updatedAt
               }
             })}
           >
@@ -362,6 +359,19 @@ const Page = () => {
                 <Switch
                   value={isDark}
                   onValueChange={toggleColorScheme}
+                  trackColor={{ false: "#D1D5DB", true: Colors.accent }}
+                  thumbColor={isDark ? Colors.primary : "#f4f3f4"}
+                />
+              }
+            />
+            <SettingItem
+              icon={<Ionicons name="notifications-outline" size={22} color={Colors.primary} />}
+              title="Onboarding Completed"
+              subtitle={isOnboardingCompleted ? "Yes" : "No"}
+              rightElement={
+                <Switch
+                  value={isOnboardingCompleted}
+                  onValueChange={(val)=>onboardingCompleted(val)}
                   trackColor={{ false: "#D1D5DB", true: Colors.accent }}
                   thumbColor={isDark ? Colors.primary : "#f4f3f4"}
                 />
@@ -426,84 +436,7 @@ const Page = () => {
   );
 };
 
-// Component for rendering user items in followers/following lists
-const UserListItem = ({ user }: { user: FollowFollower }) => {
-  const router = useRouter()
-  const {currentUser} = useAuthStore()
-  const unfollowMutation = useUnfollowAuthorMutation(user.username, currentUser?.username!);
-  return (
-    <View className="flex-row items-center py-3 px-4 border-b border-gray-100 dark:border-neutral-900">
-      <TouchableOpacity onPress={() => router.push({
-        pathname : "/userProfile",
-        params: { username: user.username }
-      })} className="flex-row items-center">
-        <Avatar uri={user.avatar} className="size-12" />
-      </TouchableOpacity>
 
-      <View className="ml-3 flex-1">
-        <CustomText fontFamily={Fonts.SemiBold} className="text-gray-900 dark:text-white">
-          {user.username}
-        </CustomText>
-      </View>
-      <Button variant="outline" size="sm" disabled={unfollowMutation.isPending} loading={unfollowMutation.isPending} onPress={()=>{
-        unfollowMutation.mutate(user._id,{
-          onSuccess: () => {
-            Alert.alert("Unfollowed", `You have unfollowed ${user.username}`);
-          },
-          onError: (error) => {
-            Alert.alert("Error", "Failed to unfollow user. Please try again.");
-            console.error("Unfollow error:", error);
-          }
-        })
-      }}>Unfollow</Button>
-    </View>
-  );
-};
-
-// Component for rendering liked posts
-const LikedPostItem = ({ post }: { post: LikedPosts }) => {
-  const router = useRouter();
-  const isDark = useColorScheme().colorScheme === "dark";
-  
-  return (
-    <Pressable 
-      className={cn(
-        "flex-row items-center bg-white dark:bg-neutral-900 mb-3 p-1.5 rounded-md shadow-sm"
-      )}
-      onPress={() => router.push(`/blog/${post.slug}`)}
-    >
-      <View className="h-20 w-20 bg-gray-100 dark:bg-gray-700">
-        {post.imageUrl ? (
-          <Image 
-            source={{ uri: post.imageUrl }} 
-            className="h-full w-full rounded-md overflow-hidden" 
-            style={{ resizeMode: 'cover' }}
-          />
-        ) : (
-          <View className="h-full w-full items-center justify-center">
-            <Feather name="image" size={24} color={isDark ? "#4b5563" : "#9ca3af"} />
-          </View>
-        )}
-      </View>
-      
-      <View className="flex-1 p-3">
-        <CustomText 
-          numberOfLines={1} 
-          fontFamily={Fonts.SemiBold}
-          className="text-gray-900 dark:text-white"
-        >
-          {post.title}
-        </CustomText>
-        <View className="mt-1 items-start">
-       <Badge  text={post.category}  />
-        </View>
-
-      </View>
-      
-     
-    </Pressable>
-  );
-};
 
 export default memo(Page);
 

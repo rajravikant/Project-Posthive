@@ -1,7 +1,7 @@
 import { getNewAccessToken } from '@/api/auth';
 import { getAccessToken, getRefreshToken, setAccessTokenInStore } from '@/store/authStore';
 import axios from 'axios';
-const isDevelopment = true;
+const isDevelopment = process.env.EXPO_PUBLIC_ENV === 'dev';
 
 const BASE_URL = isDevelopment
   ? process.env.EXPO_PUBLIC_LOCAL_API_URL

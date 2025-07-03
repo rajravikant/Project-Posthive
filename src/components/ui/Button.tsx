@@ -31,7 +31,7 @@ export default function Button({
   onPress,
   className = '',
   textClassName = '',
-}: ButtonProps) {  // Determine which style classes to apply based on variant and size
+}: ButtonProps) {  
   const getVariantClasses = () => {
     switch (variant) {
       case 'primary':

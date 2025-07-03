@@ -52,7 +52,7 @@ const InitialLayout = () => {
       try {
         const decodedAccessToken = jwtDecode<{ exp: number }>(accessToken);
         const decodedRefreshToken = jwtDecode<{ exp: number }>(refreshToken);
-        const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+        const currentTime = Math.floor(Date.now() / 1000);
         
         if (decodedRefreshToken.exp < currentTime) {
           console.log("Refresh token expired");
@@ -78,7 +78,6 @@ const InitialLayout = () => {
           return;
         }
 
-        // If both tokens are valid, show remaining epoch time into seconds
         const accessTokenRemainingTime = decodedAccessToken.exp - currentTime;
         const refreshTokenRemainingTime = decodedRefreshToken.exp - currentTime;
         console.log("Access Token Remaining Time:", accessTokenRemainingTime, "seconds");
@@ -92,9 +91,7 @@ const InitialLayout = () => {
   };
 
   useEffect(() => {
-    // Only proceed when fonts are loaded
     if (loaded) {
-      // Only check token once when fonts are loaded
       checkToken()
         .then(() => {
           SplashScreen.hideAsync();
@@ -118,9 +115,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
            <NetInfoComponent/>
           <InitialLayout />
         </ThemeProvider>
