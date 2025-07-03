@@ -38,7 +38,6 @@ interface LoginMutationResponse {
   accessToken: string;
   refreshToken: string;
   user: { userId: string; username: string; avatar: string };
-  // existingUser: Creator;
 }
 
 const LoginPage = () => {

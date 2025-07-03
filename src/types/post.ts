@@ -38,3 +38,6 @@ export type LikeType = {
 
 
 
+
+export { Creator };
+

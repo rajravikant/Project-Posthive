@@ -57,11 +57,11 @@ export default function RecommendedBlogs() {
           )}
         />
       ): (
-        <View className="items-center justify-center mt-5 gap-3">
+        <View className="items-center justify-center bg-white dark:bg-neutral-900 mt-5 p-5 gap-3">
           <CustomText variant="h3" className="text-gray-500 dark:text-gray-300">
             No recommended blogs available.
           </CustomText>
-          <CustomText className="text-gray-500 dark:text-gray-300">
+          <CustomText className="text-gray-500 dark:text-gray-300 text-center">
             Try liking or commenting on more blogs to get personalized recommendations.
           </CustomText>
           <Button  onPress={() => refetch()}>

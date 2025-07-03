@@ -53,7 +53,8 @@ const HEADER_HEIGHT = 350;
 
 export default function Blog() {
   const { slug } = useLocalSearchParams();
-  const { addToBookmark, userBookmarks, removeFromBookmark, currentUser } = useAuthStore();
+  const { addToBookmark, userBookmarks, removeFromBookmark, currentUser } =
+    useAuthStore();
   const queryClient = useQueryClient();
   const { colorScheme } = useColorScheme();
   const { width: windowWidth } = Dimensions.get("window");
@@ -78,10 +79,10 @@ export default function Blog() {
   const deleteComment = useDeleteCommentMutation();
   const likePost = useLikePostMutation();
   const unlikePost = useUnlikePostMutation();
-  
-  const [isLiked,setIsLiked] = useState(()=>{
-    return blog?.likes.some(like => like.creator === currentUser?.userId)
-  })
+
+  const [isLiked, setIsLiked] = useState(() => {
+    return blog?.likes.some((like) => like.creator === currentUser?.userId);
+  });
   useEffect(() => {
     if (blog && blog.comments) {
       setComments(
@@ -96,9 +97,6 @@ export default function Blog() {
       }
     }
   }, [blog]);
-
-
- 
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -132,10 +130,10 @@ export default function Blog() {
     }
 
     if (isLiked) {
-      setIsLiked(false);  // Optimistically update UI
+      setIsLiked(false); // Optimistically update UI
       unlikePost.mutate(blog._id, {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["blog",blog.slug] });
+          queryClient.invalidateQueries({ queryKey: ["blog", blog.slug] });
         },
         onError: (error) => {
           setIsLiked(true); // Revert like state on error
@@ -143,10 +141,12 @@ export default function Blog() {
         },
       });
     } else {
-      setIsLiked(true);  // Optimistically update UI
+      setIsLiked(true); // Optimistically update UI
       likePost.mutate(blog._id, {
         onSuccess: ({ like }) => {
-          queryClient.invalidateQueries({ queryKey: ["userProfile",blog.slug] });
+          queryClient.invalidateQueries({
+            queryKey: ["userProfile", blog.slug],
+          });
         },
         onError: (error) => {
           console.log(error);
@@ -154,8 +154,6 @@ export default function Blog() {
         },
       });
     }
-
-    
   };
 
   const onCommentSubmit = async () => {
@@ -172,11 +170,11 @@ export default function Blog() {
                   : comment
               )
             );
+            filterSheetRef.current?.close();
             Keyboard.dismiss();
             setCommentText("");
             setEditingComment(null);
             queryClient.invalidateQueries({ queryKey: ["blog", slug] });
-            filterSheetRef.current?.close();
           },
           onError: (error) => {
             Alert.alert(
@@ -193,10 +191,11 @@ export default function Blog() {
         { comment: commentText, postId: blog?._id as string },
         {
           onSuccess: (data) => {
+            filterSheetRef.current?.close();
+            Keyboard.dismiss();
             setComments((prev) => [data, ...prev]);
             setCommentText("");
             queryClient.invalidateQueries({ queryKey: ["blog", slug] });
-            filterSheetRef.current?.close();
           },
           onError: (error) => {
             Alert.alert(
@@ -254,7 +253,7 @@ export default function Blog() {
 
   const updateUserViewed = async () => {
     if (!blog) return;
-    
+
     const response = await updatePostViewed(blog._id);
     if (response.status !== 204) {
       console.log("Error updating post viewed count");
@@ -294,14 +293,14 @@ export default function Blog() {
   }
   return (
     <>
-    <StatusBar hidden />
+      <StatusBar hidden />
       <Animated.ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
-        scrollEventThrottle={16} 
+        scrollEventThrottle={16}
         onScroll={scrollHandler}
         showsVerticalScrollIndicator={false}
-        decelerationRate="normal" 
+        decelerationRate="normal"
       >
         <Animated.View
           style={[
@@ -321,7 +320,7 @@ export default function Blog() {
           <Animated.Image
             source={{ uri: blog?.imageUrl }}
             style={{
-              height: HEADER_HEIGHT + 40, 
+              height: HEADER_HEIGHT + 40,
               width: windowWidth,
               position: "absolute",
               top: 0,
@@ -393,7 +392,11 @@ export default function Blog() {
                   <View className="flex-row items-center gap-1">
                     {currentUser && (
                       <TouchableOpacity onPress={toggleLike}>
-                        <Feather name="thumbs-up" size={15} color={isLiked ? Colors.primary : "#555"} />
+                        <Feather
+                          name="thumbs-up"
+                          size={15}
+                          color={isLiked ? Colors.primary : "#555"}
+                        />
                       </TouchableOpacity>
                     )}
                     <CustomText>{blog?.likes.length || 0}</CustomText>
@@ -463,7 +466,9 @@ export default function Blog() {
                           renderItem={({ item }) => (
                             <CommentItem
                               comment={item}
-                              isCreator={item.creator._id === currentUser.userId}
+                              isCreator={
+                                item.creator._id === currentUser.userId
+                              }
                               onDelete={handleDeleteComment}
                               onEdit={handleEditComment}
                             />
@@ -583,4 +588,3 @@ export default function Blog() {
     </>
   );
 }
-
